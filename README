@@ -1,0 +1,19 @@
+=Data Format=
+each bus line is like:
+     {name:   ,
+      time:   ,
+      start:{name:   ,
+             latitude:       ,
+             longitude:      },
+      station:[{name:        ,
+                latitude:    ,
+                longitude:   },
+                {name:        , 
+                latitude:    ,  
+                longitude:   },
+                .
+                .
+                .]
+      end:{name:   ,
+             latitude:       ,
+             longitude:      }}               

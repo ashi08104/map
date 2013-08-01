@@ -10,6 +10,7 @@ import json
 import simplekml
 import random
 import cPickle
+import subprocess
 
 kml = simplekml.Kml()    
 
@@ -20,9 +21,29 @@ def get_coordinate(name):
     request = urlopen(url.encode('utf8'))
     result = json.load(request)
     #print result
-    location = [result['results'][0]['geometry']['location']['lng'],
-                result['results'][0]['geometry']['location']['lat']]
+    location_raw = result['results'][0]['geometry']['location']
+    location = [location_raw['lng'], location_raw['lat']]
     return location
+
+def check_location(name, location):
+    url = 'http://maps.google.com/?q={0},{1}'.format(location[1], location[0])
+    try:
+        print(u'open location for {0}\n'
+              'at latitude:{1}\t'
+              ' longitude:{2}'.format(name, location[1], location[0]))
+        subprocess.Popen(['xdg-open', url])
+    except OSError:
+        print 'Please open a browser on: '+url
+    yes = set(['yes','y', 'ye', ''])
+    no = set(['no','n'])
+    
+    save_result = False
+    msg = "Is this location OK?"
+    choice = raw_input("{0}(yes/no)".format(msg)).lower()
+    if choice in yes:
+        return True
+    else:
+        return False
                                                 
 def read_bus(filename):
     '''
@@ -90,10 +111,25 @@ def draw_kml_bus_line(info, start, end, stations):
                             end_geo[1][1])])
 
 def get_geo_data(data):
+    '''
+    geo_data format:
+   [
+    [
+     [no., bus line name, time],
+     [[station, station_geo_name, [longitude, latitude]],
+      [station, station_geo_name, [longitude, latitude]],
+      ...
+     ]
+    ],
+    ...
+   ]
+     
+    '''
     geo_data = []
     for bus in data:
+        bus_line = []
         #put no. bus name and time to geo_data first
-        geo_data.append(bus[0:3])
+        bus_line.append(bus[0:3])
         geo_item = []
         for item in bus[3:]:
             if u'(直驶)' not in item:
@@ -104,15 +140,15 @@ def get_geo_data(data):
                     location = get_coordinate(station_geo_name)
                     #google map api would run into 'out of limit' without sleep
                     time.sleep(1)
-                    while not location:
-                        station_geo_name = raw_input(
-                            u"can't get {0}'s location!\nput in a more machine friendly location:".format(station_geo_name)
-                            )
-                        #google map api would run into 'out of limit' without sleep
-                        time.sleep(1)
+                    while check_location(station_geo_name, location) != True:
+                        msg = u'can\'t get {0}\'s location!'.format(station_geo_name) +\
+                        'put in a more machine friendly location:'
+                        print(msg)
+                        station_geo_name = raw_input().decode('utf-8')
                         location = get_coordinate(station_geo_name)
                     geo_item.append([station, station_geo_name, location])
-        geo_data.append(geo_item)
+        bus_line.append(geo_item)
+        geo_data.append(bus_line)
     return geo_data
 
 def main():

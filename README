@@ -1,19 +1,23 @@
 =Data Format=
 each bus line is like:
-     {name:   ,
-      time:   ,
-      start:{name:   ,
-             latitude:       ,
-             longitude:      },
-      station:[{name:        ,
-                latitude:    ,
-                longitude:   },
-                {name:        , 
-                latitude:    ,  
-                longitude:   },
-                .
-                .
-                .]
-      end:{name:   ,
-             latitude:       ,
-             longitude:      }}               
+     [
+      [
+       [no., bus line name, time],
+       [
+        [start station name,
+	 start station name real,
+	 [latitude of station, longitude of station]
+	]
+	[next station name,
+	 next station name real,
+	 [latitude, longitude]
+	]
+	[...]
+	...
+       ]
+      ]
+
+      [ ...next line... ]
+      
+      ...
+    ]	

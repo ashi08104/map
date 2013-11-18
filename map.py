@@ -31,7 +31,9 @@ def check_location(name, location):
         print(u'open location for {0}\n'
               'at latitude:{1}\t'
               ' longitude:{2}'.format(name, location[1], location[0]))
-        subprocess.Popen(['xdg-open', url])
+        ''' xdg-open is for linux, open is for mac '''
+        #subprocess.Popen(['xdg-open', url])
+        subprocess.Popen(['open', url])
     except OSError:
         print 'Please open a browser on: '+url
     yes = set(['yes','y', 'ye', ''])
@@ -56,25 +58,45 @@ def read_bus(filename):
         data.append(line.split())
     return data
 
-def draw(file_name, data):
-    '''
-    draw the data to map
-    '''
-    i = 0
-    for bus in data:
-        #bus info: [#no., name, time]
-        bus_info = bus[:3]
-        start = bus[3]
-        stations = bus[4].split(',')
-        if u'(直驶)' in stations:
-            stations = []
-        end = bus[5]
-        draw_kml_bus_line(bus_info, start, end, stations)
-        print i
-        i = i + 1
+# def draw(file_name, data):
+#     '''
+#     draw the data to map
+#     '''
+#     i = 0
+#     for bus in data:
+#         #bus info: [#no., name, time]
+#         bus_info = bus[:3]
+#         start = bus[3]
+#         stations = bus[4].split(',')
+#         if u'(直驶)' in stations:
+#             stations = []
+#         end = bus[5]
+#         #draw_kml_bus_line(bus_info, start, end, stations)
+#         draw_station_start(bus_info, start)
+#         print i
+#         i = i + 1
 
-    kml.save(file_name)    
-    
+#     kml.save(file_name)    
+
+def draw(filename, data):
+    '''
+    draw the date to kml file
+    '''
+    for bus in data:
+        #TODO change data to a more readable and mnemonic structure
+        #bus[0] includes bus information
+        #bus[1][0] includes start station
+        draw_station_start(bus[0], bus[1][0])
+
+    kml.save(filename)
+
+def draw_station_start(info, start):
+    kml.newpoint(name = start[0],
+                 coords = [start[2]])
+
+
+#this function is deprecated. we should get geo date from previous step
+#not from google map online.
 def draw_kml_bus_line(info, start, end, stations):
     start_geo = [start]
     start_geo.append(get_coordinate(start))
@@ -158,22 +180,30 @@ def main():
     no = set(['no','n'])
     
     save_result = False
-    msg = "Do we have geography data in save_geo.data?"
-    choice = raw_input("{0}(yes/no)".format(msg)).lower()
+    msg1 = "Do we have geography data in save_geo.data?"
+    choice = raw_input("{0}(yes/no)".format(msg1)).lower()
     if choice in yes:
-        save_result = True
+        read_from_file = True
     elif choice in no:
-        save_result = False
+        read_from_file = False
     else:
         sys.stdout.write("Please respond with 'yes' or 'no'")
 
-    if save_result == False:
+    msg2 = "Do we want to save geography data into locae file?"
+    choice = raw_input("{0}(yes/no)".format(msg2)).lower()
+    if choice in yes:
+        save_geo_data = True
+    else:
+        save_geo_data = False
+
+    if read_from_file == False:
         data = read_bus('workbook_short.txt')
         geo_data = get_geo_data(data)
-        cPickle.dump(geo_data, open('save_geo.data', 'wb')) 
+        if save_geo_data == True:
+            cPickle.dump(geo_data, open('save_geo.data', 'wb')) 
     else:
         geo_data = cPickle.load(open('save_geo.data', 'rb'))
-        print geo_data
-    #draw('1.kml', data)
+
+    draw('1.kml', geo_data)
 
 main()

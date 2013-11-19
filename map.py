@@ -14,6 +14,16 @@ import subprocess
 
 kml = simplekml.Kml()    
 
+def yes_or_no(message):
+    yes = set(['yes','y', 'ye', ''])
+    no = set(['no','n'])
+    choice = raw_input("{0}(yes/no)".format(message)).lower()
+
+    if choice in yes:
+        return True
+    else:
+        return False
+
 def get_coordinate(name):
     '''get name's longitude and latitude'''
     googleapi = 'http://maps.googleapis.com/maps/api/geocode/json'
@@ -36,16 +46,8 @@ def check_location(name, location):
         subprocess.Popen(['open', url])
     except OSError:
         print 'Please open a browser on: '+url
-    yes = set(['yes','y', 'ye', ''])
-    no = set(['no','n'])
     
-    save_result = False
-    msg = "Is this location OK?"
-    choice = raw_input("{0}(yes/no)".format(msg)).lower()
-    if choice in yes:
-        return True
-    else:
-        return False
+    return yes_or_no("Is this location OK?")
                                                 
 def read_bus(filename):
     '''
@@ -161,7 +163,7 @@ def get_geo_data(data):
                     station_geo_name = station
                     location = get_coordinate(station_geo_name)
                     #google map api would run into 'out of limit' without sleep
-                    time.sleep(1)
+                    time.sleep(0.1)
                     while check_location(station_geo_name, location) != True:
                         msg = u'can\'t get {0}\'s location!'.format(station_geo_name) +\
                         'put in a more machine friendly location:'
@@ -175,29 +177,15 @@ def get_geo_data(data):
 
 def main():
     #TODO read from commandline
-    # raw_input returns the empty string for "enter"
-    yes = set(['yes','y', 'ye', ''])
-    no = set(['no','n'])
-    
-    save_result = False
     msg1 = "Do we have geography data in save_geo.data?"
-    choice = raw_input("{0}(yes/no)".format(msg1)).lower()
-    if choice in yes:
-        read_from_file = True
-    elif choice in no:
-        read_from_file = False
-    else:
-        sys.stdout.write("Please respond with 'yes' or 'no'")
+    read_from_file = yes_or_no(msg1)
 
     msg2 = "Do we want to save geography data into locae file?"
-    choice = raw_input("{0}(yes/no)".format(msg2)).lower()
-    if choice in yes:
-        save_geo_data = True
-    else:
-        save_geo_data = False
+    save_geo_data = yes_or_no(msg2)
+
 
     if read_from_file == False:
-        data = read_bus('workbook_short.txt')
+        data = read_bus('workbook_shorter.txt')
         geo_data = get_geo_data(data)
         if save_geo_data == True:
             cPickle.dump(geo_data, open('save_geo.data', 'wb')) 

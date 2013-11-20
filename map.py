@@ -183,8 +183,8 @@ def main():
     msg2 = "Do we want to save geography data into locae file?"
     save_geo_data = yes_or_no(msg2)
 
-
     if read_from_file == False:
+        #TODO read data from xls by xlrd module
         data = read_bus('workbook_shorter.txt')
         geo_data = get_geo_data(data)
         if save_geo_data == True:

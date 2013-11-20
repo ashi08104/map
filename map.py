@@ -24,42 +24,6 @@ def yes_or_no(message):
     else:
         return False
 
-def get_coordinate(name):
-    '''get name's longitude and latitude'''
-    googleapi = 'http://maps.googleapis.com/maps/api/geocode/json'
-    url = u'{0}?address={1}&sensor=false'.format(googleapi, name + u'+,上海')
-    request = urlopen(url.encode('utf8'))
-    result = json.load(request)
-    #print result
-    location_raw = result['results'][0]['geometry']['location']
-    location = [location_raw['lng'], location_raw['lat']]
-    return location
-
-def check_location(name, location):
-    url = 'http://maps.google.com/?q={0},{1}'.format(location[1], location[0])
-    try:
-        print(u'open location for {0}\n'
-              'at latitude:{1}\t'
-              ' longitude:{2}'.format(name, location[1], location[0]))
-        ''' xdg-open is for linux, open is for mac '''
-        #subprocess.Popen(['xdg-open', url])
-        subprocess.Popen(['open', url])
-    except OSError:
-        print 'Please open a browser on: '+url
-    
-    return yes_or_no("Is this location OK?")
-                                                
-def read_bus(filename):
-    '''
-    read bus infomation from file
-    '''
-    file = codecs.open(filename, 'r', 'utf-8')
-    #check whether file read failed.
-    data = []
-    for line in file.readlines():
-        data.append(line.split())
-    return data
-
 # def draw(file_name, data):
 #     '''
 #     draw the data to map
@@ -133,47 +97,6 @@ def draw_kml_bus_line(info, start, end, stations):
     kml.newpoint(name = end_geo[0],
                  coords = [(end_geo[1][0],
                             end_geo[1][1])])
-
-def get_geo_data(data):
-    '''
-    geo_data format:
-   [
-    [
-     [no., bus line name, time],
-     [[station, station_geo_name, [longitude, latitude]],
-      [station, station_geo_name, [longitude, latitude]],
-      ...
-     ]
-    ],
-    ...
-   ]
-     
-    '''
-    geo_data = []
-    for bus in data:
-        bus_line = []
-        #put no. bus name and time to geo_data first
-        bus_line.append(bus[0:3])
-        geo_item = []
-        for item in bus[3:]:
-            if u'(直驶)' not in item:
-                #some item include several station divided by ','
-                item_sp = item.split(',')
-                for station in item_sp:
-                    station_geo_name = station
-                    location = get_coordinate(station_geo_name)
-                    #google map api would run into 'out of limit' without sleep
-                    time.sleep(0.1)
-                    while check_location(station_geo_name, location) != True:
-                        msg = u'can\'t get {0}\'s location!'.format(station_geo_name) +\
-                        'put in a more machine friendly location:'
-                        print(msg)
-                        station_geo_name = raw_input().decode('utf-8')
-                        location = get_coordinate(station_geo_name)
-                    geo_item.append([station, station_geo_name, location])
-        bus_line.append(geo_item)
-        geo_data.append(bus_line)
-    return geo_data
 
 def main():
     #TODO read from commandline

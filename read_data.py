@@ -123,4 +123,5 @@ def main():
     buses = read_data('table1a_1.xls')
     buses_geo = get_geo(buses)
 
-main()
+if __name__ == "__main__":
+    main()

@@ -123,5 +123,4 @@ def main():
     buses = read_data('table1a_1.xls')
     buses_geo = get_geo(buses)
 
-#main()
-print get_coordinate(u'长阳路1681号临青路口')
+main()

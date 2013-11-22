@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import codecs
@@ -11,6 +11,8 @@ import simplekml
 import random
 import cPickle
 import subprocess
+
+from read_data_map import *
 
 kml = simplekml.Kml()    
 
@@ -44,21 +46,24 @@ def yes_or_no(message):
 
 #     kml.save(file_name)    
 
-def draw(filename, data):
+def draw(kml_filename, data):
     '''
     draw the date to kml file
     '''
-    for bus in data:
+    for bus_line in data:
         #TODO change data to a more readable and mnemonic structure
-        #bus[0] includes bus information
-        #bus[1][0] includes start station
-        draw_station_start(bus[0], bus[1][0])
+        bus_line_info = bus_line['name'] + bus_line['time']
+        for station in bus_line['station']:
+            info_s = bus_line_info
+            info_s += station['name']
+            coord = (station['location']['lng'], station['location']['lat'])
+            draw_station(info_s, coord)
+        
+    kml.save(kml_filename)
 
-    kml.save(filename)
-
-def draw_station_start(info, start):
-    kml.newpoint(name = start[0],
-                 coords = [start[2]])
+def draw_station(info, coord):
+    kml.newpoint(name = info,
+                 coords = [coord])
 
 
 #this function is deprecated. we should get geo date from previous step
@@ -103,13 +108,13 @@ def main():
     msg1 = "Do we have geography data in save_geo.data?"
     read_from_file = yes_or_no(msg1)
 
-    msg2 = "Do we want to save geography data into locae file?"
-    save_geo_data = yes_or_no(msg2)
-
     if read_from_file == False:
         #TODO read data from xls by xlrd module
-        data = read_bus('workbook_shorter.txt')
-        geo_data = get_geo_data(data)
+        data = read_data('table4.xls')
+        geo_data = get_geo(data)
+
+        msg2 = "Do we want to save geography data into locae file?"
+        save_geo_data = yes_or_no(msg2)
         if save_geo_data == True:
             cPickle.dump(geo_data, open('save_geo.data', 'wb')) 
     else:

@@ -27,7 +27,7 @@ def check_location(name, location):
               ' longitude:{2}'.format(name, location['lat'], location['lng']))
         ''' xdg-open is for linux, open is for mac '''
         #subprocess.Popen(['xdg-open', url])
-        subprocess.Popen(['open', url])
+        #subprocess.Popen(['open', url])
     except OSError:
         print 'Please open a browser on: '+url
     
@@ -35,14 +35,21 @@ def check_location(name, location):
 
 '''TODO remove some machine un-friendly character in name'''
 def auto_better_name(name):
-    pass
+    return name
 
 def get_coordinate(name):
-    '''get name's longitude and latitude'''
-    googleapi = 'http://maps.googleapis.com/maps/api/geocode/json'
-    url = u'{0}?address={1}&sensor=false'.format(googleapi, name + u'+,上海')
-    request = urlopen(url.encode('utf8'))
-    gmap_return = json.load(request)
+    
+    while True:
+        '''get name's longitude and latitude'''
+        googleapi = 'http://maps.googleapis.com/maps/api/geocode/json'
+        url = u'{0}?address={1}&sensor=false'.format(googleapi, name + u'+,上海')
+        request = urlopen(url.encode('utf8'))
+        gmap_return = json.load(request)
+        if gmap_return['status'] == 'OK':
+            break
+        if gmap_return['status'] == 'OVER_QUERY_LIMIT':
+            time.sleep(1)
+    
     #print json.dumps(result, indent=4, sort_keys=True)
     
     '''if google map return is more than one ressults, we should check the result
@@ -75,12 +82,12 @@ def read_data(xls_file_name):
         worksheet = workbook.sheet_by_name(worksheet_name)
         print worksheet.ncols, worksheet.nrows
         row = 1
+        station_info = {}
         while row < worksheet.nrows:
             bus_line = {}
             bus_line['name'] = worksheet.cell_value(row, 1)
             bus_line['time'] = worksheet.cell_value(row, 2)
             bus_line['station'] = [worksheet.cell_value(row, 3),
-                                   worksheet.cell_value(row, 4),
                                    worksheet.cell_value(row, 5)]
             buses.append(bus_line)
             row += 1
@@ -120,7 +127,7 @@ def parse_station(stations):
     return stations_parsed
 
 def main():
-    buses = read_data('table1a_1.xls')
+    buses = read_data('table3.xls')
     buses_geo = get_geo(buses)
 
 if __name__ == "__main__":

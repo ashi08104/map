@@ -30,12 +30,14 @@ def draw(kml_filename, data):
     '''
     draw the date to kml file
     '''
+    #print repr(data).decode("unicode_escape").encode("utf-8")
     for bus_line in data:
-        #TODO change data to a more readable and mnemonic structure
         bus_line_info = bus_line['name'] + bus_line['time']
         for station in bus_line['station']:
             info_s = bus_line_info
             info_s += station['name']
+            if u'桂林' in info_s:
+                print info_s
             coord = (station['location']['lng'], station['location']['lat'])
             draw_station(info_s, coord)
         
@@ -50,7 +52,6 @@ def main():
     read_from_file = yes_or_no(msg1)
 
     if read_from_file == False:
-        #TODO read data from xls by xlrd module
         data = read_data('table4.xls')
         geo_data = get_geo(data)
 
@@ -60,7 +61,7 @@ def main():
             cPickle.dump(geo_data, open('save_geo.data', 'wb')) 
     else:
         geo_data = cPickle.load(open('save_geo.data', 'rb'))
-
+    
     draw('1.kml', geo_data)
 
 main()

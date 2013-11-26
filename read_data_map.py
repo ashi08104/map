@@ -105,9 +105,9 @@ def get_geo(buses):
     buses_geo = []
     for bus_line in buses:
         stations = parse_station(bus_line['station'])
-        station_info = {}
         station_infos = []
         for station_name in stations:
+            station_info = {}
             station_info['name'] = station_name
             station_info['location'] = get_coordinate(station_name)
             station_infos.append(station_info)
